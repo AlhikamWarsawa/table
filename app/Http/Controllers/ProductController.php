@@ -70,7 +70,7 @@ class ProductController extends Controller
     public function update(Request $request, string $id): RedirectResponse
     {
         $request->validate([
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
@@ -126,5 +126,38 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')->with(['success' => 'Product deleted successfully.']);
+    }
+
+    // Search ------------------------------------------------------------------
+    public function search($title)
+    {
+        $product = Product::where('title', $title)->firstOrFail();
+        return view('products.show', compact('product'));
+    }
+
+    // Mass Edit ------------------------------------------------------------------
+    public function massEditForm(): View
+    {
+        $products = Product::all();
+        return view('products/mass_edit_form', compact('products'));
+    }
+
+// Mass Edit
+    public function massEdit(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'products.*.id' => 'required|exists:products,id',
+            'products.*.title' => 'required|string|max:255',
+            'products.*.description' => 'required|string',
+            'products.*.price' => 'required|numeric',
+            'products.*.stock' => 'required|numeric'
+        ]);
+
+        foreach ($request->products as $productData) {
+            $product = Product::findOrFail($productData['id']);
+            $product->update($productData);
+        }
+
+        return redirect()->route('products.index')->with(['success' => 'Products updated successfully.']);
     }
 }

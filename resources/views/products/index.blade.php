@@ -2,7 +2,6 @@
 <head>
     <title>Home</title>
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
@@ -12,7 +11,8 @@
         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
                 <div class="w-full md:w-1/2">
-                    <form class="flex items-center">
+                        {{--Search--}}
+                    <form action="{{ route('products.search', ['title => $product->title']) }}" method="GET" class="flex items-center" onsubmit="return handleSearch(event)">
                         <label for="simple-search" class="sr-only">Search</label>
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -20,9 +20,17 @@
                                     <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                                 </svg>
                             </div>
-                            <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search" required="">
+                            <input type="text" name="query" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search products..." required>
                         </div>
                     </form>
+
+                    <script>
+                        function handleSearch(event) {
+                            event.preventDefault();
+                            const query = document.getElementById('simple-search').value;
+                            window.location.href = `/products/view/${query}`;
+                        }
+                    </script>
                 </div>
 
                 <div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
@@ -42,18 +50,18 @@
                         <div id="actionsDropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
                             <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="actionsDropdownButton">
                                 <li>
-                                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass Edit</a>
+                                    <a href="{{ route('products.mass_edit_form') }}" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass Edit</a>
                                 </li>
                             </ul>
                             <div class="py-1">
                                 <form action="{{ route('products.deleteAll') }}" method="POST" id="delete-all-form">
                                     @csrf
-                                    <button type="button" onclick="confirmDeleteAll()" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete all</button>
+                                    <button type="button" onclick="confirmDeleteAll()" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"">Delete all</button>
                                 </form>
 
                                 <script>
                                     function confirmDeleteAll() {
-                                        if (confirm('Sudah Mandi?')) {
+                                        if (confirm('Sudah Sigma?')) {
                                             document.getElementById('delete-all-form').submit();
                                         }
                                     }
@@ -110,30 +118,30 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @forelse($products as $products)
+                    @forelse($products as $product)
                     <tr class="border-b dark:border-gray-700">
                         <td class="px-4 py-3">
-                            <img src="{{ asset('storage/images/' . $products->image) }}" class="rounded" style="width: 150px">
+                            <img src="{{ asset('storage/images/' . $product->image) }}" class="rounded" style="width: 150px">
                         </td>
-                        <td class="px-4 py-3">{{$products->title}}</td>
-                        <td class="px-4 py-3">{{$products->description}}</td>
-                        <td class="px-4 py-3">{{'Rp ' . number_format($products->price,2,',','.')}}</td>
-                        <td class="px-4 py-3">{{$products->stock}}</td>
+                        <td class="px-4 py-3">{{$product->title}}</td>
+                        <td class="px-4 py-3">{{$product->description}}</td>
+                        <td class="px-4 py-3">{{'Rp ' . number_format($product->price,2,',','.')}}</td>
+                        <td class="px-4 py-3">{{$product->stock}}</td>
                         <td class="px-4 py-3 flex items-center justify-end">
-                            <a href="{{route('products.show', $products->id)}}"><button type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">View</button></a>
-                            <a href="{{route('products.edit', $products->id)}}"><button type="button" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Edit</button></a>
-                            <form id="delete-form-{{ $products->id }}" action="{{ route('products.destroy', $products->id) }}" method="POST" style="display: none;">
+                            <a href="{{route('products.show', $product->id)}}"><button type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">View</button></a>
+                            <a href="{{route('products.edit', $product->id)}}"><button type="button" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Edit</button></a>
+                            <form id="delete-form-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" style="display: none;">
                                 @csrf
                                 @method('DELETE')
                             </form>
                             <script>
                                 function confirmDelete(productId) {
-                                    if (confirm('Are you sure you want to delete this product?')) {
+                                    if (confirm('Sudah Mewing?')) {
                                         document.getElementById('delete-form-' + productId).submit();
                                     }
                                 }
                             </script>
-                            <button type="button" onclick="confirmDelete({{ $products->id }})" class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Delete</button>
+                            <button type="button" onclick="confirmDelete({{ $product->id }})" class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Delete</button>
                         </td>
                     </tr>
                     @empty
